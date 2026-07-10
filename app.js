@@ -10,8 +10,7 @@ const MONTHS_SHORT = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 
 
 const CHIP_DEFS = [
   { key: 'hunger', title: 'Açlık', opts: [['Aç', 'Aç'], ['Tok', 'Tok']] },
-  { key: 'clothing', title: 'Kıyafet', opts: [['Kıyafetli', 'Kıyafetli'], ['Kıyafetsiz', 'Kıyafetsiz']] },
-  { key: 'toilet', title: 'Tuvalet', opts: [['Öncesi', 'Tuvalet öncesi'], ['Sonrası', 'Tuvalet sonrası']] }
+  { key: 'clothing', title: 'Kıyafet', opts: [['Kıyafetli', 'Kıyafetli'], ['Kıyafetsiz', 'Kıyafetsiz']] }
 ];
 
 function fmt(n) {
@@ -63,7 +62,7 @@ const state = {
 function open() {
   const cur = state.entries.length ? state.entries[state.entries.length - 1].w : state.goal;
   state.popupOpen = true;
-  state.draft = { w: cur, hunger: null, clothing: null, toilet: null };
+  state.draft = { w: cur, hunger: null, clothing: null };
   render();
 }
 
@@ -89,7 +88,7 @@ function save() {
   if (!state.draft) return;
   const entries = state.entries.slice();
   const todayIso = new Date().toISOString().slice(0, 10);
-  const parts = [state.draft.hunger, state.draft.clothing, state.draft.toilet].filter(Boolean);
+  const parts = [state.draft.hunger, state.draft.clothing].filter(Boolean);
   const note = parts.length ? parts.join(' · ') : null;
   const last = entries[entries.length - 1];
   if (last && last.d === todayIso) {
