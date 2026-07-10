@@ -1,8 +1,8 @@
 'use strict';
 
-const STORAGE_KEY = 'kilo-takip-v1';
+const STORAGE_KEY = 'kilo-takip-v2';
 const GOAL_STORAGE_KEY = 'kilo-takip-hedef-v1';
-const GOAL_DEFAULT = 88;
+const GOAL_DEFAULT = 80;
 const SHOW_GOAL = true;
 
 const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -23,33 +23,18 @@ function fmtDate(iso) {
   return d.getDate() + ' ' + MONTHS_SHORT[d.getMonth()];
 }
 
-function seed() {
-  const out = [];
-  const today = new Date();
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const base = 96.8 - (29 - i) * 0.0931;
-    const noise = Math.sin(i * 2.7) * 0.22 + Math.sin(i * 1.31 + 2) * 0.14;
-    const w = +(base + noise).toFixed(1);
-    let note = null;
-    if (i === 21) note = 'Tok · Kıyafetli';
-    if (i === 12) note = 'Aç · Tuvalet sonrası';
-    if (i === 4) note = 'Aç · Kıyafetsiz';
-    out.push({ d: d.toISOString().slice(0, 10), w: w, note: note });
-  }
-  out[out.length - 1].w = 94.1;
-  return out;
+function fmtFullDate(iso) {
+  const d = new Date(iso + 'T12:00:00');
+  return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
 }
 
 function loadEntries() {
-  let entries = null;
-  try { entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) {}
-  if (!entries || !entries.length) {
-    entries = seed();
-    persist(entries);
+  try {
+    const entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    return Array.isArray(entries) ? entries : [];
+  } catch (e) {
+    return [];
   }
-  return entries;
 }
 
 function persist(entries) {
@@ -76,7 +61,7 @@ const state = {
 };
 
 function open() {
-  const cur = state.entries.length ? state.entries[state.entries.length - 1].w : 94.1;
+  const cur = state.entries.length ? state.entries[state.entries.length - 1].w : state.goal;
   state.popupOpen = true;
   state.draft = { w: cur, hunger: null, clothing: null, toilet: null };
   render();
@@ -163,7 +148,7 @@ function computeChart(entries, goal, showGoal) {
   const lastP = pts[pts.length - 1];
   const areaPath = linePath + 'L' + lastP.x + ',' + (H - pb) + 'L' + pts[0].x + ',' + (H - pb) + 'Z';
   const noteDots = pts.filter(p => p.e.note).map(p => ({ x: p.x, y: p.y }));
-  return { linePath, areaPath, noteDots, lastP, goalY: +yOf(goal).toFixed(1) };
+  return { linePath, areaPath, noteDots, lastP, pts, goalY: +yOf(goal).toFixed(1) };
 }
 
 function chipGroups() {
@@ -175,11 +160,34 @@ function chipGroups() {
   }));
 }
 
+let chartPoints = [];
+
 function renderChart(entries, goal, showGoal) {
+  const goalLine = document.getElementById('goalLine');
+  const lastPoint = document.getElementById('lastPoint');
+  const noteDotsG = document.getElementById('noteDots');
+
+  if (!entries.length) {
+    chartPoints = [];
+    hideHover();
+    const H = 176, pt = 14, pb = 24;
+    const mid = pt + (H - pt - pb) / 2;
+    goalLine.style.display = showGoal ? '' : 'none';
+    goalLine.setAttribute('y1', mid);
+    goalLine.setAttribute('y2', mid);
+    document.getElementById('areaPath').setAttribute('d', '');
+    document.getElementById('linePath').setAttribute('d', '');
+    document.getElementById('startLabel').textContent = '';
+    lastPoint.style.display = 'none';
+    noteDotsG.innerHTML = '';
+    return;
+  }
+
+  lastPoint.style.display = '';
   const chart = computeChart(entries, goal, showGoal);
+  chartPoints = chart.pts;
   const first = entries[0];
 
-  const goalLine = document.getElementById('goalLine');
   goalLine.style.display = showGoal ? '' : 'none';
   goalLine.setAttribute('y1', chart.goalY);
   goalLine.setAttribute('y2', chart.goalY);
@@ -187,13 +195,11 @@ function renderChart(entries, goal, showGoal) {
   document.getElementById('areaPath').setAttribute('d', chart.areaPath);
   document.getElementById('linePath').setAttribute('d', chart.linePath);
 
-  const lastPoint = document.getElementById('lastPoint');
   lastPoint.setAttribute('cx', chart.lastP.x);
   lastPoint.setAttribute('cy', chart.lastP.y);
 
   document.getElementById('startLabel').textContent = fmtDate(first.d);
 
-  const noteDotsG = document.getElementById('noteDots');
   noteDotsG.innerHTML = '';
   const svgNs = 'http://www.w3.org/2000/svg';
   chart.noteDots.forEach(p => {
@@ -208,6 +214,52 @@ function renderChart(entries, goal, showGoal) {
   });
 }
 
+function showHoverAt(p) {
+  const hoverLine = document.getElementById('hoverLine');
+  const hoverPoint = document.getElementById('hoverPoint');
+  const tooltip = document.getElementById('chartTooltip');
+
+  hoverLine.setAttribute('x1', p.x);
+  hoverLine.setAttribute('x2', p.x);
+  hoverLine.style.opacity = '1';
+  hoverPoint.setAttribute('cx', p.x);
+  hoverPoint.setAttribute('cy', p.y);
+  hoverPoint.style.opacity = '1';
+
+  tooltip.hidden = false;
+  tooltip.style.left = (p.x / 342 * 100) + '%';
+  tooltip.style.top = (p.y / 176 * 100) + '%';
+  const parts = [fmtDate(p.e.d) + ': ' + fmt(p.e.w) + ' kg'];
+  if (p.e.note) parts.push(p.e.note);
+  tooltip.textContent = parts.join(' · ');
+}
+
+function hideHover() {
+  document.getElementById('hoverLine').style.opacity = '0';
+  document.getElementById('hoverPoint').style.opacity = '0';
+  document.getElementById('chartTooltip').hidden = true;
+}
+
+function nearestPointFromClientX(clientX) {
+  const svg = document.getElementById('chartSvg');
+  const rect = svg.getBoundingClientRect();
+  if (!rect.width) return null;
+  const relX = (clientX - rect.left) / rect.width * 342;
+  let nearest = chartPoints[0];
+  let bestDist = Infinity;
+  for (const p of chartPoints) {
+    const dist = Math.abs(p.x - relX);
+    if (dist < bestDist) { bestDist = dist; nearest = p; }
+  }
+  return nearest;
+}
+
+function onChartPointer(evt) {
+  if (!chartPoints.length) return;
+  const p = nearestPointFromClientX(evt.clientX);
+  if (p) showHoverAt(p);
+}
+
 function render() {
   const entries = state.entries;
   const goal = state.goal;
@@ -220,13 +272,26 @@ function render() {
     today.getDate() + ' ' + MONTHS[today.getMonth()] + ' ' + today.getFullYear();
 
   document.getElementById('goalHeader').textContent = showGoal ? 'Hedef ' + fmt(goal) + ' kg' : '';
-  document.getElementById('weightNum').textContent = fmt(last.w);
 
-  const diff30 = last.w - first.w;
-  const change30 = 'Son 30 gün ' + (diff30 <= 0 ? '−' : '+') + fmt(Math.abs(diff30)) + ' kg';
-  const rem = last.w - goal;
-  const remaining = !showGoal ? '' : (rem > 0.05 ? 'Hedefe ' + fmt(rem) + ' kg' : 'Hedefe ulaşıldı');
-  document.getElementById('subline').textContent = [remaining, change30].filter(Boolean).join(' · ');
+  if (!entries.length) {
+    document.getElementById('weightNum').textContent = '—';
+    document.getElementById('subline').textContent = 'Henüz kayıt yok · Güncelle\'ye dokun';
+    document.getElementById('lastEntryDate').textContent = '';
+  } else {
+    document.getElementById('weightNum').textContent = fmt(last.w);
+    let change30 = '';
+    if (entries.length > 1) {
+      const diff30 = last.w - first.w;
+      change30 = 'Son 30 gün ' + (diff30 <= 0 ? '−' : '+') + fmt(Math.abs(diff30)) + ' kg';
+    }
+    const rem = last.w - goal;
+    const remaining = !showGoal ? '' : (rem > 0.05 ? 'Hedefe ' + fmt(rem) + ' kg' : 'Hedefe ulaşıldı');
+    document.getElementById('subline').textContent = [remaining, change30].filter(Boolean).join(' · ');
+
+    const todayIso = today.toISOString().slice(0, 10);
+    document.getElementById('lastEntryDate').textContent =
+      last.d === todayIso ? 'Bugün güncellendi' : 'Son kayıt: ' + fmtFullDate(last.d);
+  }
 
   renderChart(entries, goal, showGoal);
 
@@ -280,6 +345,23 @@ document.getElementById('closeGoalPopupBtn').addEventListener('click', closeGoal
 document.getElementById('saveGoalBtn').addEventListener('click', saveGoal);
 document.querySelectorAll('[data-goal-adjust]').forEach(btn => {
   btn.addEventListener('click', () => adjustGoal(+btn.getAttribute('data-goal-adjust')));
+});
+
+const chartSvg = document.getElementById('chartSvg');
+const chartWrap = document.querySelector('.chart-wrap');
+chartSvg.addEventListener('pointerdown', (evt) => {
+  chartSvg.setPointerCapture(evt.pointerId);
+  onChartPointer(evt);
+});
+chartSvg.addEventListener('pointermove', (evt) => {
+  if (evt.pointerType === 'mouse' || evt.buttons > 0) onChartPointer(evt);
+});
+chartSvg.addEventListener('pointercancel', hideHover);
+chartSvg.addEventListener('pointerleave', (evt) => {
+  if (evt.pointerType === 'mouse') hideHover();
+});
+document.addEventListener('pointerdown', (evt) => {
+  if (!chartWrap.contains(evt.target)) hideHover();
 });
 
 render();

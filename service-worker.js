@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'kilo-takip-v2';
+const CACHE_NAME = 'kilo-takip-v7';
 const APP_SHELL = [
   './',
   './index.html',

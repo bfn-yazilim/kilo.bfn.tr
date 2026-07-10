@@ -6,6 +6,7 @@
 html, body {
   margin: 0;
   background: #E8E5DF;
+  background-color:#F1F6F2;
   font-family: Manrope, sans-serif;
 }
 
@@ -92,6 +93,16 @@ a:hover { color: #8F3416; }
   box-shadow: 0 8px 20px rgba(46, 139, 98, .35);
 }
 
+.last-entry {
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9BB3A5;
+  text-align: center;
+}
+
+.last-entry:empty { display: none; }
+
 .chart-card {
   margin: auto 24px 30px 24px;
   background: #FFFFFF;
@@ -105,7 +116,34 @@ a:hover { color: #8F3416; }
 
 .chart-title { font-size: 14px; font-weight: 800; }
 
-.chart-card svg { display: block; width: 100%; height: auto; }
+.chart-wrap { position: relative; }
+
+.chart-wrap svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+
+#hoverLine, #hoverPoint { transition: opacity .1s ease; }
+
+.chart-tooltip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -125%);
+  background: #17352A;
+  color: #fff;
+  font: 700 12px Manrope, sans-serif;
+  padding: 6px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 6px 16px rgba(23, 53, 42, .25);
+}
+
+.chart-tooltip[hidden] { display: none; }
 
 .popup-overlay {
   position: fixed;
