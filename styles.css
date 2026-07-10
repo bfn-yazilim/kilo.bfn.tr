@@ -1,0 +1,202 @@
+@keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: #E8E5DF;
+  font-family: Manrope, sans-serif;
+}
+
+a { color: #B4451F; text-decoration: none; }
+a:hover { color: #8F3416; }
+
+.app {
+  position: relative;
+  max-width: 430px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: #F1F6F2;
+  display: flex;
+  flex-direction: column;
+  color: #17352A;
+}
+
+.app-header {
+  padding: max(24px, env(safe-area-inset-top)) 24px 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-date { font-size: 14px; font-weight: 700; color: #6C8579; }
+
+.app-goal {
+  background: #DFEDE3;
+  color: #2E8B62;
+  font: 800 12px Manrope, sans-serif;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.weight-card {
+  margin: 28px 24px 0 24px;
+  background: #FFFFFF;
+  border-radius: 28px;
+  padding: 32px 24px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(23, 53, 42, .07);
+}
+
+.weight-card-label { font-size: 13px; font-weight: 700; color: #6C8579; }
+
+.weight-value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.weight-value .num {
+  font-size: 88px;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.weight-value .unit { font-size: 24px; font-weight: 800; color: #9BB3A5; }
+
+.weight-subline {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6C8579;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.btn-primary {
+  margin-top: 22px;
+  width: 100%;
+  padding: 17px 0;
+  background: #2E8B62;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font: 800 16px Manrope, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(46, 139, 98, .35);
+}
+
+.chart-card {
+  margin: auto 24px 30px 24px;
+  background: #FFFFFF;
+  border-radius: 28px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(23, 53, 42, .07);
+}
+
+.chart-title { font-size: 14px; font-weight: 800; }
+
+.chart-card svg { display: block; width: 100%; height: auto; }
+
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 40, 30, .4);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  z-index: 5;
+  animation: fadeIn .2s ease;
+}
+
+.popup-overlay[hidden] { display: none; }
+
+.popup-sheet {
+  background: #fff;
+  border-radius: 32px 32px 0 0;
+  padding: 26px 24px max(32px, env(safe-area-inset-bottom)) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  animation: sheetUp .28s ease;
+}
+
+.popup-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.popup-sheet-title { font-size: 22px; font-weight: 800; }
+
+.popup-close {
+  border: none;
+  background: #EAF2EC;
+  color: #6C8579;
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
+  font-size: 15px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.weight-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.weight-stepper button {
+  width: 50px;
+  height: 50px;
+  border-radius: 999px;
+  border: none;
+  background: #EAF2EC;
+  font: 800 15px Manrope, sans-serif;
+  color: #17352A;
+  cursor: pointer;
+}
+
+.weight-stepper button.small { font-weight: 700; font-size: 13px; }
+
+.weight-draft {
+  min-width: 120px;
+  text-align: center;
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.chip-group { display: flex; flex-direction: column; gap: 9px; }
+
+.chip-group-title { font-size: 12px; font-weight: 800; color: #6C8579; }
+
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.chip {
+  padding: 10px 16px;
+  border-radius: 999px;
+  font: 700 13px Manrope, sans-serif;
+  cursor: pointer;
+  border: 1.5px solid #D6E5DA;
+  background: #fff;
+  color: #456354;
+}
+
+.chip.selected {
+  font-weight: 800;
+  border-color: #2E8B62;
+  background: #2E8B62;
+  color: #fff;
+}
