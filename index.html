@@ -55,6 +55,16 @@
 </head>
 <body>
 <div class="app">
+  <div class="install-banner" id="installBanner" hidden>
+    <img class="install-banner-icon" src="./icons/icon-192.png" alt="">
+    <div class="install-banner-text">
+      <div class="install-banner-title">Kilo Takip'i ana ekranına ekle</div>
+      <div class="install-banner-desc" id="installBannerDesc">Hızlı erişim için uygulamayı yükle.</div>
+    </div>
+    <button type="button" class="install-banner-action" id="installActionBtn" hidden>Yükle</button>
+    <button type="button" class="install-banner-close" id="installCloseBtn" aria-label="Kapat">✕</button>
+  </div>
+
   <div class="app-header">
     <div class="app-date" id="dateText"></div>
     <button type="button" class="app-goal" id="goalHeader"></button>

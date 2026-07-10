@@ -24,6 +24,68 @@ a:hover { color: #8F3416; }
   color: #17352A;
 }
 
+.install-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0 auto;
+  max-width: 430px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #17352A;
+  color: #fff;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, .18);
+  z-index: 4;
+  animation: sheetUp .3s ease;
+}
+
+.install-banner[hidden] { display: none; }
+
+.install-banner-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.install-banner-text { flex: 1; min-width: 0; }
+
+.install-banner-title { font: 800 13px Manrope, sans-serif; }
+
+.install-banner-desc {
+  font: 600 12px Manrope, sans-serif;
+  color: #B9D0C4;
+  margin-top: 2px;
+}
+
+.install-banner-action {
+  background: #2E8B62;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 16px;
+  font: 800 13px Manrope, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.install-banner-action[hidden] { display: none; }
+
+.install-banner-close {
+  background: transparent;
+  border: none;
+  color: #B9D0C4;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 6px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .app-header {
   padding: max(24px, env(safe-area-inset-top)) 24px 0 24px;
   display: flex;

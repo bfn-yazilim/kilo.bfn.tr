@@ -371,3 +371,54 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./service-worker.js').catch(() => {});
   });
 }
+
+(function setupInstallBanner() {
+  const DISMISS_KEY = 'kilo-takip-install-dismissed';
+  const banner = document.getElementById('installBanner');
+  const descEl = document.getElementById('installBannerDesc');
+  const actionBtn = document.getElementById('installActionBtn');
+  const closeBtn = document.getElementById('installCloseBtn');
+
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (isStandalone) return;
+  if (localStorage.getItem(DISMISS_KEY)) return;
+
+  const ua = navigator.userAgent;
+  const isIos = /iphone|ipad|ipod/i.test(ua);
+  const isIosSafari = isIos && /safari/i.test(ua) && !/crios|fxios|edgios|opios/i.test(ua);
+
+  function dismiss() {
+    banner.hidden = true;
+    try { localStorage.setItem(DISMISS_KEY, '1'); } catch (e) {}
+  }
+
+  closeBtn.addEventListener('click', dismiss);
+
+  if (isIos) {
+    if (isIosSafari) {
+      descEl.textContent = 'Paylaş simgesine, ardından "Ana Ekrana Ekle"ye dokun.';
+      banner.hidden = false;
+    }
+    return;
+  }
+
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (evt) => {
+    evt.preventDefault();
+    deferredPrompt = evt;
+    descEl.textContent = 'Hızlı erişim için uygulamayı ana ekranına ekle.';
+    actionBtn.hidden = false;
+    banner.hidden = false;
+  });
+
+  actionBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    banner.hidden = true;
+  });
+
+  window.addEventListener('appinstalled', dismiss);
+})();
