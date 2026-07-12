@@ -61,8 +61,9 @@ const state = {
 
 function open() {
   const cur = state.entries.length ? state.entries[state.entries.length - 1].w : state.goal;
+  const todayIso = new Date().toISOString().slice(0, 10);
   state.popupOpen = true;
-  state.draft = { w: cur, hunger: null, clothing: null };
+  state.draft = { d: todayIso, w: cur, hunger: null, clothing: null };
   render();
 }
 
@@ -78,6 +79,12 @@ function adjust(dw) {
   render();
 }
 
+function setDraftDate(dateIso) {
+  if (!state.draft || !dateIso) return;
+  state.draft.d = dateIso;
+  render();
+}
+
 function toggle(group, val) {
   if (!state.draft) return;
   state.draft[group] = state.draft[group] === val ? null : val;
@@ -87,14 +94,15 @@ function toggle(group, val) {
 function save() {
   if (!state.draft) return;
   const entries = state.entries.slice();
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const dateIso = state.draft.d || new Date().toISOString().slice(0, 10);
   const parts = [state.draft.hunger, state.draft.clothing].filter(Boolean);
   const note = parts.length ? parts.join(' · ') : null;
-  const last = entries[entries.length - 1];
-  if (last && last.d === todayIso) {
-    entries[entries.length - 1] = { d: todayIso, w: state.draft.w, note: note || last.note };
+  const idx = entries.findIndex(e => e.d === dateIso);
+  if (idx !== -1) {
+    entries[idx] = { d: dateIso, w: state.draft.w, note: note || entries[idx].note };
   } else {
-    entries.push({ d: todayIso, w: state.draft.w, note: note });
+    entries.push({ d: dateIso, w: state.draft.w, note: note });
+    entries.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
   }
   persist(entries);
   state.entries = entries;
@@ -299,6 +307,10 @@ function render() {
   if (state.popupOpen && state.draft) {
     document.getElementById('draftWeight').textContent = fmt(state.draft.w);
 
+    const dateInput = document.getElementById('draftDate');
+    dateInput.max = new Date().toISOString().slice(0, 10);
+    if (dateInput.value !== state.draft.d) dateInput.value = state.draft.d;
+
     const groupsEl = document.getElementById('chipGroups');
     groupsEl.innerHTML = '';
     chipGroups().forEach(g => {
@@ -335,6 +347,7 @@ function render() {
 document.getElementById('openUpdateBtn').addEventListener('click', open);
 document.getElementById('closePopupBtn').addEventListener('click', closePopup);
 document.getElementById('savePopupBtn').addEventListener('click', save);
+document.getElementById('draftDate').addEventListener('change', (evt) => setDraftDate(evt.target.value));
 document.querySelectorAll('[data-adjust]').forEach(btn => {
   btn.addEventListener('click', () => adjust(+btn.getAttribute('data-adjust')));
 });
