@@ -99,6 +99,12 @@
     </div>
   </div>
 
+  <div class="data-actions">
+    <button type="button" class="btn-secondary" id="exportDataBtn">Verileri Dışa Aktar</button>
+    <button type="button" class="btn-secondary" id="importDataBtn">Verileri İçe Aktar</button>
+    <input type="file" id="importFileInput" accept="application/json,.json" hidden>
+  </div>
+
   <div class="popup-overlay" id="popupOverlay" hidden>
     <div class="popup-sheet">
       <div class="popup-sheet-header">
@@ -107,7 +113,10 @@
       </div>
       <div class="date-field">
         <label class="date-field-label" for="draftDate">Tarih</label>
-        <input type="date" id="draftDate">
+        <div class="date-field-control">
+          <input type="date" id="draftDate">
+          <div class="date-field-preview" id="draftDatePreview"></div>
+        </div>
       </div>
       <div class="weight-stepper">
         <button data-adjust="-1">−1</button>

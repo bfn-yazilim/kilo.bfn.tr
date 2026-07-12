@@ -207,6 +207,23 @@ a:hover { color: #8F3416; }
 
 .chart-tooltip[hidden] { display: none; }
 
+.data-actions {
+  margin: 0 24px 28px 24px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 13px 0;
+  background: #EAF2EC;
+  color: #2E8B62;
+  border: none;
+  border-radius: 999px;
+  font: 800 13px Manrope, sans-serif;
+  cursor: pointer;
+}
+
 .popup-overlay {
   position: fixed;
   inset: 0;
@@ -288,6 +305,13 @@ a:hover { color: #8F3416; }
 
 .date-field-label { font-size: 13px; font-weight: 800; color: #6C8579; }
 
+.date-field-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
 .date-field input[type="date"] {
   border: 1.5px solid #D6E5DA;
   border-radius: 999px;
@@ -295,6 +319,13 @@ a:hover { color: #8F3416; }
   font: 700 14px Manrope, sans-serif;
   color: #17352A;
   background: #fff;
+}
+
+.date-field-preview {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9BB3A5;
+  padding-right: 4px;
 }
 
 .chip-group { display: flex; flex-direction: column; gap: 9px; }

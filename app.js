@@ -111,6 +111,64 @@ function save() {
   render();
 }
 
+function exportData() {
+  const data = { version: 1, exportedAt: new Date().toISOString(), goal: state.goal, entries: state.entries };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'kilo-takip-yedek-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function isValidImportedEntry(e) {
+  return !!e && /^\d{4}-\d{2}-\d{2}$/.test(e.d) && typeof e.w === 'number' && Number.isFinite(e.w);
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try {
+      data = JSON.parse(reader.result);
+    } catch (e) {
+      alert('Dosya okunamadı: geçerli bir JSON dosyası değil.');
+      return;
+    }
+    const imported = Array.isArray(data) ? data : Array.isArray(data && data.entries) ? data.entries : null;
+    if (!imported) {
+      alert('Dosyada geçerli veri bulunamadı.');
+      return;
+    }
+    const entries = state.entries.slice();
+    let count = 0;
+    imported.forEach(raw => {
+      if (!isValidImportedEntry(raw)) return;
+      const w = Math.min(250, Math.max(30, raw.w));
+      const note = typeof raw.note === 'string' ? raw.note : null;
+      const idx = entries.findIndex(e => e.d === raw.d);
+      if (idx !== -1) entries[idx] = { d: raw.d, w, note };
+      else entries.push({ d: raw.d, w, note });
+      count++;
+    });
+    entries.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
+    persist(entries);
+    state.entries = entries;
+
+    if (data && typeof data.goal === 'number' && Number.isFinite(data.goal)) {
+      state.goal = Math.min(250, Math.max(30, data.goal));
+      persistGoal(state.goal);
+    }
+
+    render();
+    alert(count + ' kayıt içe aktarıldı.');
+  };
+  reader.readAsText(file);
+}
+
 function openGoalPopup() {
   state.goalPopupOpen = true;
   state.goalDraft = state.goal;
@@ -310,6 +368,7 @@ function render() {
     const dateInput = document.getElementById('draftDate');
     dateInput.max = new Date().toISOString().slice(0, 10);
     if (dateInput.value !== state.draft.d) dateInput.value = state.draft.d;
+    document.getElementById('draftDatePreview').textContent = fmtFullDate(state.draft.d);
 
     const groupsEl = document.getElementById('chipGroups');
     groupsEl.innerHTML = '';
@@ -350,6 +409,16 @@ document.getElementById('savePopupBtn').addEventListener('click', save);
 document.getElementById('draftDate').addEventListener('change', (evt) => setDraftDate(evt.target.value));
 document.querySelectorAll('[data-adjust]').forEach(btn => {
   btn.addEventListener('click', () => adjust(+btn.getAttribute('data-adjust')));
+});
+
+document.getElementById('exportDataBtn').addEventListener('click', exportData);
+document.getElementById('importDataBtn').addEventListener('click', () => {
+  document.getElementById('importFileInput').click();
+});
+document.getElementById('importFileInput').addEventListener('change', (evt) => {
+  const file = evt.target.files[0];
+  if (file) importData(file);
+  evt.target.value = '';
 });
 
 document.getElementById('goalHeader').addEventListener('click', openGoalPopup);
